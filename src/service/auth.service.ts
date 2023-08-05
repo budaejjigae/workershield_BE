@@ -5,15 +5,17 @@ import { Request, Response } from "express";
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 import * as dotenv from "dotenv";
+import { Company } from "@src/database/entity/company.entity";
 
 dotenv.config();
 
 const userRepo = AppDataSource.getRepository(User);
+const companyRepo = AppDataSource.getRepository(Company);
 
 const jwtSecret : string = process.env.JWT_SECRET!;
 
 const createAccount = async (req: Request, res: Response): Promise<object> => {
-    const { userID, userName, userPW, userEmail } = req.body;
+    const { userID, userName, userPW, inviteCode } = req.body;
 
     const thisIDUser = await userRepo.findOneBy({ userID });
     if (thisIDUser) return res.status(409).json({
@@ -22,11 +24,17 @@ const createAccount = async (req: Request, res: Response): Promise<object> => {
     })
     const thisPW = await bcrypt.hash(userPW, 10);
 
+    const thisCompany = await companyRepo.findOneBy({ companyCode: inviteCode });
+    if (!thisCompany) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 초대 코드"
+    })
+
     const thisUser = await userRepo.save({
         userStringID: userID,
         userName,
         userPW: thisPW,
-        userEmail,
+        inviteCode,
     })
 
     return res.status(201).json({

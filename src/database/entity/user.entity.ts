@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Company } from "./company.entity";
 
 @Entity()
 export class User{
@@ -16,11 +17,18 @@ export class User{
     @Column()
     userPW!: string;
 
-    @Column({
-        unique: true
-    })
-    userEmail!: string;
-
     @Column()
+    inviteCode!: string;
+
+    @ManyToOne(
+        () => Company,
+        company => company.user
+    )
+    @JoinColumn()
+    company!: Company;
+
+    @Column({
+        nullable: true
+    })
     accesstoken!: string;
 }
