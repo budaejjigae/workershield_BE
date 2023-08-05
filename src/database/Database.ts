@@ -2,17 +2,18 @@ import {DataSource} from "typeorm";
 import dotenv  from "dotenv";
 dotenv.config();
 import {username, password, database} from "@src/utils/env/env";
+import { User } from "./entity/user.entity";
 
 
 console.log(username, password, database)
 const AppDataSource = new DataSource({
     type: "mysql",
-    host: "localhost",
+    host: '127.0.0.1',
     port: 3306,
     username,
     password,
     database,
-    entities: [],
+    entities: [User],
     synchronize: true,
     logging: ["info","error"],
 })
