@@ -61,7 +61,36 @@ const signIn = async (req: Request, res: Response): Promise<object> => {
     })
 }
 
+const deleteAccount = async (req: Request, res: Response): Promise<object> => {
+    const accesstoken = req.headers.authorization!.split(' ')[1];
+    const { userPW } = req.body;
+
+    const thisUserVerify: any = jwt.verify(accesstoken, jwtSecret);
+
+    const { userID } = thisUserVerify;
+
+    const thisUser = await userRepo.findOneBy({ userID });
+    if (!thisUser) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 유저"
+    })
+
+    if (!await bcrypt.compare(userPW, thisUser.userPW)) return res.status(409).json({
+        errCode: 409,
+        errMsg: "비밀번호 불일치"
+    })
+
+    await userRepo.delete({ userID });
+
+    return res.status(204).json({
+        data: null,
+        statusCode: 204,
+        statusMsg: "회원 탈퇴 완료"
+    })
+}
+
 export {
     createAccount,
-    signIn
+    signIn,
+    deleteAccount,
 }
