@@ -3,6 +3,8 @@ import dotenv  from "dotenv";
 dotenv.config();
 import {username, password, database} from "@src/utils/env/env";
 import { User } from "./entity/user.entity";
+import { Company } from "./entity/company.entity";
+import { Article } from "./entity/article.entity";
 
 
 console.log(username, password, database)
@@ -13,7 +15,7 @@ const AppDataSource = new DataSource({
     username,
     password,
     database,
-    entities: [User],
+    entities: [User, Company, Article],
     synchronize: true,
     logging: ["info","error"],
 })

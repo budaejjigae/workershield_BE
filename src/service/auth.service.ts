@@ -1,11 +1,11 @@
 import { AppDataSource } from "@src/database/Database";
 import { User } from "@src/database/entity/user.entity";
-import { ConflictException, NotFoundException, UnAuthorizedException } from "@src/utils/exception/Exceptions";
 import { Request, Response } from "express";
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 import * as dotenv from "dotenv";
 import { Company } from "@src/database/entity/company.entity";
+import { validateAccess } from "@src/utils/middleware/validate.middle";
 
 dotenv.config();
 
@@ -70,25 +70,20 @@ const signIn = async (req: Request, res: Response): Promise<object> => {
 }
 
 const deleteAccount = async (req: Request, res: Response): Promise<object> => {
-    const accesstoken = req.headers.authorization!.split(' ')[1];
-    const { userPW } = req.body;
-
-    const thisUserVerify: any = jwt.verify(accesstoken, jwtSecret);
-
-    const { userID } = thisUserVerify;
-
-    const thisUser = await userRepo.findOneBy({ userID });
+    const thisUser = await validateAccess(req.headers.authorization!);
     if (!thisUser) return res.status(404).json({
         errCode: 404,
         errMsg: "존재하지 않는 유저"
     })
+
+    const { userPW } = req.body;
 
     if (!await bcrypt.compare(userPW, thisUser.userPW)) return res.status(409).json({
         errCode: 409,
         errMsg: "비밀번호 불일치"
     })
 
-    await userRepo.delete({ userID });
+    await userRepo.delete({ userID: thisUser.userID });
 
     return res.status(204).json({
         data: null,
