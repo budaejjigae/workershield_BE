@@ -19,10 +19,8 @@ const getBoardList = async (req: Request, res: Response): Promise<object> => {
         errMsg: "존재하지 않는 유저"
     })
 
-    console.log(page, Number(page))
-
     let skipNumber = (Number(page) - 1) * 10;
-    if (typeof (skipNumber) != "number") return res.status(409).json({
+    if (typeof (skipNumber) != "number" || typeof(page) != "number") return res.status(409).json({
         errCode: 409,
         errMsg: "주소 에러 발생"
     })
@@ -33,7 +31,7 @@ const getBoardList = async (req: Request, res: Response): Promise<object> => {
             createdAt: "DESC",
         },
         take: 10,
-        skip: Number(page) * 10
+        skip: skipNumber
     })
 
     return res.status(200).json({
@@ -66,7 +64,36 @@ const createBoard = async (req: Request, res: Response): Promise<object> => {
     })
 }
 
+const getBoard = async (req: Request, res: Response): Promise<object> => {
+    const thisUser = await validateAccess(req.headers.authorization!);
+    const { id } = req.query;
+    const boardID = Number(id);
+
+    if (!thisUser) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 유저"
+    })
+
+    const thisBoard = await boardRepo.findOneBy({ boardID });
+    const thisBoardComment = await commentRepo.findBy({ boardID });
+
+    if (!thisBoard) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 게시글"
+    })
+
+    return res.status(200).json({
+        data: {
+            board: thisBoard,
+            comment: thisBoardComment
+        },
+        statusCode: 200,
+        statusMsg: "글 조회 완료"
+    });
+}
+
 export {
     getBoardList,
-    createBoard
+    createBoard,
+    getBoard
 }

@@ -7,6 +7,9 @@ export class Comment {
     commentID!: number;
 
     @Column()
+    boardID!: number;
+
+    @Column()
     commentWriter!: string;
 
     @Column()
