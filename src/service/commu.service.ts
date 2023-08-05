@@ -193,6 +193,11 @@ const createComment = async (req: Request, res: Response): Promise<object> => {
         commentWriterID: thisUser.userID,
         commentContent,
     })
+    await boardRepo.update({
+        boardID
+    }, {
+        boardComment : thisBoard.boardComment + 1
+    })
 
     return res.status(201).json({
         data: thisComment,
@@ -273,6 +278,42 @@ const updateComment = async (req: Request, res: Response): Promise<object> => {
     })
 }
 
+const deleteComment = async (req: Request, res: Response): Promise<object> => {
+    const thisUser = await validateAccess(req.headers.authorization!);
+    const { id, comID } = req.params;
+    const boardID = Number(id);
+    const commentID = Number(comID);
+
+    const thisBoard = await boardRepo.findOneBy({ boardID });
+    const thisComment = await commentRepo.findOneBy({ commentID });
+
+    if (!thisUser) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 유저"
+    })
+    if (!thisBoard) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 게시글"
+    })
+    if (!thisComment) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 댓글"
+    })
+
+    await commentRepo.delete({ commentID });
+    await boardRepo.update({
+        boardID
+    }, {
+        boardComment: thisBoard.boardComment - 1
+    })
+
+    return res.status(204).json({
+        data: null,
+        statusCode: 204,
+        statusMsg: "댓글 삭제 완료"
+    })
+}
+
 export {
     getBoardList,
     updateBoard,
@@ -282,4 +323,5 @@ export {
     createComment,
     getCommentList,
     updateComment,
+    deleteComment,
 }
