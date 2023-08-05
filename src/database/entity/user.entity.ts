@@ -1,8 +1,12 @@
+import { config } from "dotenv";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Board } from "./board.entity";
 import { Company } from "./company.entity";
 
+config();
+
 @Entity()
-export class User{
+export class User {
     @PrimaryGeneratedColumn()
     userID!: number;
 
@@ -20,6 +24,11 @@ export class User{
     @Column()
     inviteCode!: string;
 
+    @Column({
+        default: process.env.PROFILE_LINK
+    })
+    userProfile!: string;
+    
     @ManyToOne(
         () => Company,
         company => company.user
@@ -31,4 +40,10 @@ export class User{
         nullable: true
     })
     accesstoken!: string;
+
+    @OneToMany(
+        () => Board,
+        board => board.user
+    )
+    board!: Board;
 }

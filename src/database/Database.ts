@@ -5,6 +5,8 @@ import {username, password, database} from "@src/utils/env/env";
 import { User } from "./entity/user.entity";
 import { Company } from "./entity/company.entity";
 import { Article } from "./entity/article.entity";
+import { Board } from "./entity/board.entity";
+import { Comment } from "./entity/comment.entity";
 
 
 console.log(username, password, database)
@@ -15,7 +17,7 @@ const AppDataSource = new DataSource({
     username,
     password,
     database,
-    entities: [User, Company, Article],
+    entities: [User, Company, Article, Board, Comment],
     synchronize: true,
     logging: ["info","error"],
 })
