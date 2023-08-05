@@ -13,6 +13,9 @@ export class Comment {
     commentWriter!: string;
 
     @Column()
+    commentWriterID!: number;
+
+    @Column()
     commentContent!: string;
 
     @CreateDateColumn()

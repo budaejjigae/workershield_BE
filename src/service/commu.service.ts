@@ -26,7 +26,7 @@ const getBoardList = async (req: Request, res: Response): Promise<object> => {
     })
 
     const boardList = await boardRepo.find({
-        select: ['boardWriter', 'boardHead', 'boardContent', 'boardView', 'boardComment'],
+        select: ['boardID', 'boardWriter', 'boardHead', 'boardContent', 'boardView', 'boardComment'],
         order: {
             createdAt: "DESC",
         },
@@ -168,10 +168,44 @@ const deleteBoard = async (req: Request, res: Response): Promise<object> => {
     })
 }
 
+const createComment = async (req: Request, res: Response): Promise<object> => {
+    const thisUser = await validateAccess(req.headers.authorization!);
+
+    const { id } = req.params;
+    const boardID = Number(id);
+    
+    const { commentContent } = req.body;
+
+    const thisBoard = await boardRepo.findOneBy({ boardID });
+
+    if (!thisUser) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 유저"
+    })
+    if (!thisBoard) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 게시글"
+    })
+
+    const thisComment = await commentRepo.save({
+        boardID,
+        commentWriter: thisUser.userName,
+        commentWriterID: thisUser.userID,
+        commentContent,
+    })
+
+    return res.status(201).json({
+        data: thisComment,
+        statusCode: 201,
+        statusMsg: "댓글 작성 완료"
+    })
+}
+
 export {
     getBoardList,
     updateBoard,
     createBoard,
     deleteBoard,
-    getBoard
+    getBoard,
+    createComment,
 }

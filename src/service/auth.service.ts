@@ -15,37 +15,46 @@ const companyRepo = AppDataSource.getRepository(Company);
 const jwtSecret : string = process.env.JWT_SECRET!;
 
 const createAccount = async (req: Request, res: Response): Promise<object> => {
-    const { userID, userName, userPW, inviteCode } = req.body;
+    try {    
+        const { userID, userName, userPW, inviteCode } = req.body;
 
-    const thisIDUser = await userRepo.findOneBy({ userID });
-    if (thisIDUser) return res.status(409).json({
-        errCode: 409,
-        errMsg: "이미 존재하는 아이디"
-    })
-    const thisPW = await bcrypt.hash(userPW, 10);
+        const thisIDUser = await userRepo.findOneBy({ userStringID : userID });
+        if (thisIDUser) return res.status(409).json({
+            errCode: 409,
+            errMsg: "이미 존재하는 아이디"
+        })
+        const thisPW = await bcrypt.hash(userPW, 10);
 
-    const thisCompany = await companyRepo.findOneBy({ companyCode: inviteCode });
-    if (!thisCompany) return res.status(404).json({
-        errCode: 404,
-        errMsg: "존재하지 않는 초대 코드"
-    })
+        const thisCompany = await companyRepo.findOneBy({ companyCode: inviteCode });
+        if (!thisCompany) return res.status(404).json({
+            errCode: 404,
+            errMsg: "존재하지 않는 초대 코드"
+        })
 
-    const thisUser = await userRepo.save({
-        userStringID: userID,
-        userName,
-        userPW: thisPW,
-        inviteCode,
-    })
+        const thisUser = await userRepo.save({
+            userStringID: userID,
+            userName,
+            userPW: thisPW,
+            inviteCode,
+        })
 
-    return res.status(201).json({
-        data: thisUser,
-        statusCode: 201,
-        statusMsg: "회원가입 완료"
-    })
+        return res.status(201).json({
+            data: thisUser,
+            statusCode: 201,
+            statusMsg: "회원가입 완료"
+        })
+    } catch (err) {
+        console.error(err);
+        return res.json(err);
+    }
 }
 
 const signIn = async (req: Request, res: Response): Promise<object> => {
     const { userID, userPW } = req.body;
+    if (!userID || !userPW) return res.status(409).json({
+        errCode: 409,
+        errMsg: "인수 부족"
+    })
 
     const thisUser = await userRepo.findOneBy({ userStringID: userID });
 
