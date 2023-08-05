@@ -138,9 +138,40 @@ const updateBoard = async (req: Request, res: Response): Promise<object> => {
     });
 }
 
+const deleteBoard = async (req: Request, res: Response): Promise<object> => {
+    const thisUser = await validateAccess(req.headers.authorization!);
+    const { id } = req.params;
+    const boardID = Number(id);
+
+    if (!thisUser) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 유저"
+    })
+
+    const thisBoard = await boardRepo.findOneBy({ boardID });
+
+    if (!thisBoard) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 글"
+    })
+    if (thisBoard.boardWriterID != thisUser.userID) return res.status(403).json({
+        errCode: 403,
+        errMsg: "본인의 글이 아님"
+    })
+
+    await boardRepo.delete({ boardID });
+
+    return res.status(204).json({
+        data: null,
+        statusCode: 204,
+        statusMsg: "글 삭제 완료"
+    })
+}
+
 export {
     getBoardList,
     updateBoard,
     createBoard,
+    deleteBoard,
     getBoard
 }
