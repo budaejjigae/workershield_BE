@@ -101,8 +101,30 @@ const deleteAccount = async (req: Request, res: Response): Promise<object> => {
     })
 }
 
+const signOut = async (req: Request, res: Response): Promise<object> => {
+    const thisUser = await validateAccess(req.headers.authorization!);
+
+    if (!thisUser) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 유저"
+    })
+
+    await userRepo.update({
+        userID: thisUser.userID
+    }, {
+        accesstoken: 'null'
+    })
+
+    return res.status(204).json({
+        data: null,
+        statusCode: 204,
+        statusMsg: "로그아웃 완료"
+    })
+}
+
 export {
     createAccount,
     signIn,
     deleteAccount,
+    signOut,
 }
