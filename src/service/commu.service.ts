@@ -229,6 +229,50 @@ const getCommentList = async (req: Request, res: Response): Promise<object> => {
     })
 }
 
+const updateComment = async (req: Request, res: Response): Promise<object> => {
+    const thisUser = await validateAccess(req.headers.authorization!);
+    const { id, comID } = req.params;
+    const boardID = Number(id);
+    const commentID = Number(comID);
+
+
+    const thisBoard = await boardRepo.findOneBy({ boardID });
+    const thisComment = await commentRepo.findOneBy({ commentID });
+
+    const { commentContent } = req.body;
+
+    if (!thisUser) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 유저"
+    })
+    if (!thisBoard) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 게시글"
+    })
+    if (!thisComment) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 댓글"
+    })
+    if (thisUser.userID != thisComment.commentWriterID) return res.status(403).json({
+        errCode: 403,
+        errMsg: "본인 댓글이 아님"
+    })
+
+    await commentRepo.update({
+        commentID
+    }, {
+        commentContent
+    });
+
+    const afterUpdate = await commentRepo.findOneBy({ commentID });
+
+    return res.status(200).json({
+        data: afterUpdate,
+        statusCode: 200,
+        statusMsg: "댓글 수정 완료"
+    })
+}
+
 export {
     getBoardList,
     updateBoard,
@@ -237,4 +281,5 @@ export {
     getBoard,
     createComment,
     getCommentList,
+    updateComment,
 }
