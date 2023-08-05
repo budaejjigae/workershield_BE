@@ -16,6 +16,9 @@ export class Board {
     @Column()
     boardWriter!: string;
 
+    @Column()
+    boardWriterID!: number;
+
     @Column({
         default: 0
     })

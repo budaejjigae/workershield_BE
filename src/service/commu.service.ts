@@ -19,6 +19,14 @@ const getBoardList = async (req: Request, res: Response): Promise<object> => {
         errMsg: "존재하지 않는 유저"
     })
 
+    console.log(page, Number(page))
+
+    let skipNumber = (Number(page) - 1) * 10;
+    if (typeof (skipNumber) != "number") return res.status(409).json({
+        errCode: 409,
+        errMsg: "주소 에러 발생"
+    })
+
     const boardList = await boardRepo.find({
         select: ['boardWriter', 'boardHead', 'boardContent', 'boardView', 'boardComment'],
         order: {
@@ -35,6 +43,30 @@ const getBoardList = async (req: Request, res: Response): Promise<object> => {
     });
 }
 
+const createBoard = async (req: Request, res: Response): Promise<object> => {
+    const thisUser = await validateAccess(req.headers.authorization!);
+    const { boardHead, boardContent } = req.body;
+
+    if (!thisUser) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 유저"
+    })
+
+    const thisBoard = await boardRepo.save({
+        boardHead,
+        boardContent,
+        boardWriter: thisUser.userName,
+        boardWriterID: thisUser.userID
+    })
+
+    return res.status(201).json({
+        data: thisBoard,
+        statusCode: 201,
+        statusMsg: "글 작성 완료"
+    })
+}
+
 export {
     getBoardList,
+    createBoard
 }
