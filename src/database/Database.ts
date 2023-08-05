@@ -1,8 +1,10 @@
 import {DataSource} from "typeorm";
 import dotenv  from "dotenv";
 dotenv.config();
+import {username, password, database} from "@src/utils/env/env";
 
-const {username, password,database } = process.env;
+
+console.log(username, password, database)
 const AppDataSource = new DataSource({
     type: "mysql",
     host: "localhost",
