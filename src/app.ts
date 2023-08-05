@@ -22,21 +22,20 @@ DatabaseStart();
 
 app.use(
     cors({
-            origin: true, // '*' 안됨 -> 정확한 주소 또는 origin: true로 해도 됨
-            credentials: true,
+        origin: true, // '*' 안됨 -> 정확한 주소 또는 origin: true로 해도 됨
+        credentials: true,
     }),
 );
 
-
-app.use('/api',controller);
+app.use('/',controller);
 
 app.use((req:Request, res:Response, next:NextFunction) => {
         next(new NotFoundException())
 });
 
 app.use(((err: HttpError, req: Request, res: Response, next: NextFunction) => {
-        const {httpCode, message} = err;
-      return res.status(httpCode ?? 500).json(message ?? "Internal Server Error");
+    const {httpCode, message} = err;
+    return res.status(httpCode ?? 500).json(message ?? "Internal Server Error");
 }) as ErrorRequestHandler);
 
-app.listen(8088)
+app.listen(8088);
