@@ -173,7 +173,7 @@ const createComment = async (req: Request, res: Response): Promise<object> => {
 
     const { id } = req.params;
     const boardID = Number(id);
-    
+
     const { commentContent } = req.body;
 
     const thisBoard = await boardRepo.findOneBy({ boardID });
@@ -314,6 +314,27 @@ const deleteComment = async (req: Request, res: Response): Promise<object> => {
     })
 }
 
+const search = async (req: Request, res: Response): Promise<object> => {
+    const thisUser = await validateAccess(req.headers.authorization!);
+    const { searchWord } = req.query;
+
+    if (!thisUser) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 유저"
+    })
+
+    const thisBoardList = await boardRepo
+        .createQueryBuilder('qb')
+        .where(`qb.boardHead like :searchWord`, { searchWord: `%${searchWord}%` })
+        .getMany();
+
+    return res.status(200).json({
+        data: thisBoardList,
+        statusCode: 200,
+        statusMsg: "검색 완료"
+    })
+}
+
 export {
     getBoardList,
     updateBoard,
@@ -324,4 +345,5 @@ export {
     getCommentList,
     updateComment,
     deleteComment,
+    search
 }

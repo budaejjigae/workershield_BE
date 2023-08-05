@@ -1,4 +1,4 @@
-import { createBoard, createComment, deleteBoard, deleteComment, getBoard, getBoardList, getCommentList, updateBoard, updateComment } from '@src/service/commu.service';
+import { createBoard, createComment, deleteBoard, deleteComment, getBoard, getBoardList, getCommentList, search, updateBoard, updateComment } from '@src/service/commu.service';
 import express from 'express';
 
 const router = express.Router();
@@ -13,5 +13,6 @@ router.patch('/board/:id', updateBoard);
 router.delete('/board/:id', deleteBoard);
 router.get('/page/:page', getBoardList);
 router.post('/', createBoard);
+router.get('/search/?', search);
 
 export { router };
