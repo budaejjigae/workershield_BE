@@ -201,6 +201,34 @@ const createComment = async (req: Request, res: Response): Promise<object> => {
     })
 }
 
+const getCommentList = async (req: Request, res: Response): Promise<object> => {
+    const thisUser = await validateAccess(req.headers.authorization!);
+    const { id } = req.params;
+    const boardID = Number(id);
+
+    const thisBoard = await boardRepo.findOneBy({ boardID });
+
+    if (!thisUser) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 유저"
+    })
+    if (!thisBoard) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 게시글"
+    })
+
+    const thisComments = await commentRepo.find({
+        where: { boardID },
+        order: { "createAt" : "DESC" }
+    })
+
+    return res.status(200).json({
+        data: thisComments,
+        statusCode: 200,
+        statusMsg: "댓글 조회 완료"
+    })
+}
+
 export {
     getBoardList,
     updateBoard,
@@ -208,4 +236,5 @@ export {
     deleteBoard,
     getBoard,
     createComment,
+    getCommentList,
 }
