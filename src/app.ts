@@ -9,6 +9,7 @@ import cors from "cors";
 import {HttpError, NotFoundException} from "@src/utils/exception/Exceptions";
 
 import controller from "@src/controller/IndexController";
+import {DatabaseStart} from "@src/database/Database";
 
 
 const app = asyncify(express());
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 
+DatabaseStart();
 
 app.use(
     cors({
