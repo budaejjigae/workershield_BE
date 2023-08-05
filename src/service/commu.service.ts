@@ -12,7 +12,7 @@ const commentRepo = AppDataSource.getRepository(Comment);
 
 const getBoardList = async (req: Request, res: Response): Promise<object> => {
     const thisUser = await validateAccess(req.headers.authorization!);
-    const { page } = req.query;
+    const { page } = req.params;
 
     if (!thisUser) return res.status(404).json({
         errCode: 404,
@@ -20,7 +20,7 @@ const getBoardList = async (req: Request, res: Response): Promise<object> => {
     })
 
     let skipNumber = (Number(page) - 1) * 10;
-    if (typeof (skipNumber) != "number" || typeof(page) != "number") return res.status(409).json({
+    if (typeof (skipNumber) != "number") return res.status(409).json({
         errCode: 409,
         errMsg: "주소 에러 발생"
     })
@@ -66,7 +66,7 @@ const createBoard = async (req: Request, res: Response): Promise<object> => {
 
 const getBoard = async (req: Request, res: Response): Promise<object> => {
     const thisUser = await validateAccess(req.headers.authorization!);
-    const { id } = req.query;
+    const { id } = req.params;
     const boardID = Number(id);
 
     if (!thisUser) return res.status(404).json({
@@ -82,6 +82,12 @@ const getBoard = async (req: Request, res: Response): Promise<object> => {
         errMsg: "존재하지 않는 게시글"
     })
 
+    await boardRepo.update({
+        boardID
+    }, {
+        boardView: thisBoard.boardView + 1
+    })
+
     return res.status(200).json({
         data: {
             board: thisBoard,
@@ -92,8 +98,49 @@ const getBoard = async (req: Request, res: Response): Promise<object> => {
     });
 }
 
+const updateBoard = async (req: Request, res: Response): Promise<object> => {
+    const thisUser = await validateAccess(req.headers.authorization!);
+    const { id } = req.params;
+    const boardID = Number(id);
+
+    if (!thisUser) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 유저"
+    })
+
+    const thisBoard = await boardRepo.findOneBy({ boardID });
+    if (!thisBoard) return res.status(404).json({
+        errCode: 404,
+        errMsg: "존재하지 않는 글"
+    })
+    if (thisBoard.boardWriterID != thisUser.userID) return res.status(403).json({
+        errCode: 403,
+        errMsg: "본인의 글이 아님"
+    })
+
+    const boardHead = req.body.boardHead ?? thisBoard.boardHead;
+    const boardContent = req.body.boardContent ?? thisBoard.boardContent;
+
+    await boardRepo.update(
+        { boardID },
+        {
+            boardHead,
+            boardContent,
+        }
+    )
+
+    const afterupdate = await boardRepo.findOneBy({ boardID })
+
+    return res.status(200).json({
+        data: afterupdate,
+        statusCode: 200,
+        statusMsg: "글 수정 완료"
+    });
+}
+
 export {
     getBoardList,
+    updateBoard,
     createBoard,
     getBoard
 }
