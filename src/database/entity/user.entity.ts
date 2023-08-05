@@ -20,4 +20,7 @@ export class User{
         unique: true
     })
     userEmail!: string;
+
+    @Column()
+    accesstoken!: string;
 }
